@@ -1,0 +1,25 @@
+---
+
+- name: 'config : configure Telegraf'
+  win_template:
+    src: '{{ telegraf_template_config_src }}'
+    dest: '{{ telegraf_directory }}\\telegraf.conf'
+  when:
+    - telegraf_template_config
+  notify:
+    - restart telegraf
+
+- name: 'config : check if a service is installed'
+  win_service:
+    name: telegraf
+  register: register_telegraf_service
+
+- name: 'config : register service'
+  win_command: '"{{ telegraf_directory }}\telegraf.exe" {{ telegraf_service_args | join(" ") }}'
+  when: not register_telegraf_service.exists
+
+- name: 'config : set service startup mode to auto and ensure it is started'
+  win_service:
+    name: Telegraf
+    start_mode: auto
+    state: started

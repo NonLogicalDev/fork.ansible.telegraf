@@ -1,0 +1,16 @@
+---
+
+- service:
+    name: telegraf
+    state: restarted
+    enabled: true
+  when: not telegraf_container and ansible_system == 'Linux'
+- win_service:
+    name: Telegraf
+    start_mode: auto
+    state: restarted
+  when: not telegraf_container and ansible_system == 'Windows'
+- docker_container:
+    name: telegraf
+    restart: true
+  when: telegraf_container

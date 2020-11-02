@@ -1,0 +1,7 @@
+---
+
+- name: 'windows : install'
+  import_tasks: "install_{{ telegraf_install_type | default('package') }}.yml"
+
+- name: 'windows : include configuration tasks'
+  include_tasks: 'configuration.yml'

@@ -1,0 +1,8 @@
+---
+
+- name: 'Include docker variables'
+  include_vars: 'Docker.yml'
+
+- name: 'Setup docker container'
+  include_tasks: 'Docker/main.yml'
+

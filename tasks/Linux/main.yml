@@ -1,0 +1,9 @@
+---
+- name: 'linux : include configuration tasks'
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "install_{{ ansible_pkg_mgr }}.yml"
+    - "install_package.yml"
+
+- name: 'linux : include configuration tasks'
+  include_tasks: 'configuration.yml'

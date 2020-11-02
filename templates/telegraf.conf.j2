@@ -1,153 +1,161 @@
+#jinja2: lstrip_blocks:True
 ### MANAGED BY {{ role_path|basename }} ANSIBLE ROLE ###
 
 [global_tags]
-{% if telegraf_global_tags is defined and telegraf_global_tags is iterable %}
-{% for item in telegraf_global_tags %}
-    {{ item.tag_name }} = "{{ item.tag_value }}"
-{% endfor %}
+{% if telegraf_config_global_tags is defined and telegraf_config_global_tags is iterable %}
+    {% for name, value in telegraf_config_global_tags.items() %}
+    {{ name }} = "{{value}}"
+    {% endfor %}
 {% endif %}
 
 [agent]
-    interval = "{{ telegraf_agent_interval }}s"
-    debug = {{ telegraf_agent_debug | lower }}
-    hostname = "{{ telegraf_agent_hostname }}"
-    round_interval = {{ telegraf_agent_round_interval | lower }}
-    flush_interval = "{{ telegraf_agent_flush_interval }}s"
-    flush_jitter = "{{ telegraf_agent_flush_jitter }}s"
+    interval = "{{ telegraf_config_agent_interval }}s"
+    debug = {{ telegraf_config_agent_debug | lower }}
+    hostname = "{{ telegraf_config_agent_hostname }}"
+    round_interval = {{ telegraf_config_agent_round_interval | lower }}
+    flush_interval = "{{ telegraf_config_agent_flush_interval }}s"
+    flush_jitter = "{{ telegraf_config_agent_flush_jitter }}s"
 {% if telegraf_version is version_compare('0.13', '>=') %}
-    collection_jitter = "{{ telegraf_agent_collection_jitter }}s"
-    metric_batch_size = {{ telegraf_agent_metric_batch_size }}
-    metric_buffer_limit = {{ telegraf_agent_metric_buffer_limit }}
-    quiet = {{ telegraf_agent_quiet | lower }}
+    collection_jitter = "{{ telegraf_config_agent_collection_jitter }}s"
+    metric_batch_size = {{ telegraf_config_agent_metric_batch_size }}
+    metric_buffer_limit = {{ telegraf_config_agent_metric_buffer_limit }}
+    quiet = {{ telegraf_config_agent_quiet | lower }}
 {% endif %}
 {% if telegraf_version is version_compare('1.1', '>=') %}
     logfile = "{{ telegraf_logfile }}"
-    omit_hostname = {{ telegraf_agent_omit_hostname | lower }}
+    omit_hostname = {{ telegraf_config_agent_omit_hostname | lower }}
 {% endif %}
 
+
+{% if telegraf_config_outputs is defined and telegraf_config_outputs | length %}
 ###############################################################################
 #                                  OUTPUTS                                    #
 ###############################################################################
 
-{% if telegraf_output is defined and telegraf_output is iterable %}
-{% for item in telegraf_output %}
+    {% for item in telegraf_config_outputs %}
 [[outputs.{{ item.type }}]]
-{% for items in item.config %}
+        {% for items in item.config %}
     {{ items }}
-{% endfor %}
-{% if item.tagpass is defined and item.tagpass is iterable %}
-[outputs.{{ item.type }}.tagpass]
-{% for items in item.tagpass %}
+        {% endfor %}
+        {% if item.tagpass is defined and item.tagpass is iterable %}
+    [outputs.{{ item.type }}.tagpass]
+            {% for items in item.tagpass %}
     {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.tagdrop is defined and item.tagdrop is iterable %}
-[outputs.{{ item.type }}.tagdrop]
-{% for items in item.tagdrop %}
+            {% endfor %}
+        {% endif %}
+        {% if item.tagdrop is defined and item.tagdrop is iterable %}
+    [outputs.{{ item.type }}.tagdrop]
+            {% for items in item.tagdrop %}
     {{ items }}
-{% endfor %}
-{% endif %}
-{% endfor %}
+            {% endfor %}
+        {% endif %}
+    {{''}}
+    {% endfor %}
 {% endif %}
 
+
+{% if telegraf_config_inputs is defined and telegraf_config_inputs | length > 0 %}
 ###############################################################################
 #                                  INPUTS                                     #
 ###############################################################################
 
-{% if telegraf_inputs is defined and telegraf_inputs is iterable %}
-{% for item in telegraf_inputs %}
+    {% for item in telegraf_config_inputs %}
 [[inputs.{{ item.input }}]]
-{% if item.interval is defined %}
+        {% if item.interval is defined %}
     interval = "{{ item.interval }}s"
-{% endif %}
-{% if item.config is defined and item.config is iterable %}
-{% for items in item.config %}
+        {% endif %}
+        {% if item.config is defined and item.config is iterable %}
+            {% for items in item.config %}
     {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.tags is defined and item.tags is iterable %}
+            {% endfor %}
+        {% endif %}
+        {% if item.tags is defined and item.tags is iterable %}
     [inputs.{{ item.input }}.tags]
-{% for items in item.tags %}
+            {% for items in item.tags %}
         {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.tagpass is defined and item.tagpass is iterable %}
+            {% endfor %}
+        {% endif %}
+        {% if item.tagpass is defined and item.tagpass is iterable %}
     [inputs.{{ item.input }}.tagpass]
-{% for items in item.tagpass %}
+            {% for items in item.tagpass %}
         {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.tagdrop is defined and item.tagdrop is iterable %}
+            {% endfor %}
+        {% endif %}
+        {% if item.tagdrop is defined and item.tagdrop is iterable %}
     [inputs.{{ item.input }}.tagdrop]
-{% for items in item.tagdrop %}
+            {% for items in item.tagdrop %}
         {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.objects is defined and item.objects is iterable %}
-{% for object in item.objects %}
+            {% endfor %}
+        {% endif %}
+        {% if item.objects is defined and item.objects is iterable %}
+            {% for object in item.objects %}
 [[inputs.{{ item.input }}.object]]
-  ObjectName = {{ object.name | to_json }}
-  Instances = {{ object.instances | default(["*"]) | to_json }}
-  Counters = {{ object.counters | default(["*"]) | to_json }}
-  Measurement = {{ object.measurement | default("win_perf_counters") | to_json }}
-  IncludeTotal = {{ object.total | default(false) | string | lower }}
-{% endfor %}
-{% endif %}
-{% endfor %}
+    ObjectName = {{ object.name | to_json }}
+    Instances = {{ object.instances | default(["*"]) | to_json }}
+    Counters = {{ object.counters | default(["*"]) | to_json }}
+    Measurement = {{ object.measurement | default("win_perf_counters") | to_json }}
+    IncludeTotal = {{ object.total | default(false) | string | lower }}
+            {% endfor %}
+        {% endif %}
+    {{''}}
+    {% endfor %}
 {% endif %}
 
-{% if telegraf_input is defined and telegraf_input|length == 0 %}
-{% if telegraf_plugins_extra is defined and telegraf_plugins_extra.keys() | length == 0 %}
+{% if telegraf_config_input is defined and telegraf_config_input|length == 0 %}
+    {% if telegraf_config_plugins_extra is defined and telegraf_config_plugins_extra.keys() | length == 0 %}
 # No plugins configured, added a mem plugin so telegraf doesn't stop working.
 [[inputs.mem]]
-{% endif %}
+    {% endif %}
 {% endif %}
 
+
+{% if telegraf_config_processors is defined and telegraf_config_processors|length > 0 %}
 ###############################################################################
 #                                  PROCESSORS                                 #
 ###############################################################################
 
-{% if telegraf_processors is defined and telegraf_processors is iterable %}
-{% for item in telegraf_processors %}
+    {% for item in telegraf_config_processors %}
 [[processors.{{ item.processor }}]]
-{% if item.config is defined and item.config is iterable %}
-{% for items in item.config %}
+        {% if item.config is defined and item.config is iterable %}
+            {% for items in item.config %}
     {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.tags is defined and item.tags is iterable %}
+            {% endfor %}
+        {% endif %}
+        {% if item.tags is defined and item.tags is iterable %}
     [processors.{{ item.processor }}.tags]
-{% for items in item.tags %}
+            {% for items in item.tags %}
         {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.fields is defined and item.fields is iterable %}
+            {% endfor %}
+        {% endif %}
+        {% if item.fields is defined and item.fields is iterable %}
     [processors.{{ item.processor }}.fields]
-{% for items in item.fields %}
+            {% for items in item.fields %}
         {{ items }}
-{% endfor %}
+            {% endfor %}
+        {% endif %}
+    {{''}}
+    {% endfor %}
 {% endif %}
-{% endfor %}
-{% endif %}
 
 
+{% if telegraf_config_aggregators is iterable and telegraf_config_aggregators|length > 0 %}
 ###############################################################################
-#                            AGGREGATORS PLUGINS                               #
+#                             AGGREGATORS PLUGINS                             #
 ###############################################################################
 
-{% if telegraf_aggregators is defined and telegraf_aggregators is iterable %}
-{% for item in telegraf_aggregators %}
+    {% for item in telegraf_config_aggregators %}
 [[aggregators.{{ item.aggregator }}]]
-{% if item.config is defined and item.config is iterable %}
-{% for items in item.config %}
+        {% if item.config is defined and item.config is iterable %}
+            {% for items in item.config %}
     {{ items }}
-{% endfor %}
-{% endif %}
-{% if item.subconfig is defined and item.subconfig is iterable %}
+            {% endfor %}
+        {% endif %}
+        {% if item.subconfig is defined and item.subconfig is iterable %}
     [[aggregators.{{ item.aggregator }}.config]]
-{% for items in item.subconfig %}
+            {% for items in item.subconfig %}
         {{ items }}
-{% endfor %}
-{% endif %}
-{% endfor %}
+            {% endfor %}
+        {% endif %}
+    {{''}}
+    {% endfor %}
 {% endif %}

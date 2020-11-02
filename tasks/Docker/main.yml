@@ -1,10 +1,14 @@
 ---
-# tasks file for sbaerlocher.telegraf
+
+- name: 'docker : check system'
+  fail:
+    msg: "Docker is only supported on Linux"
+  when: ansible_system != 'Linux'
 
 - name: 'docker : include configuration tasks'
-  include_tasks: 'configuration.yml'
+  include_tasks: 'Linux/configuration.yml'
 
-- name: 'Ensure Telegraf Docker container is running'
+- name: 'docker : ensure Telegraf container is running'
   docker_container:
     name: 'telegraf'
     image: 'telegraf:{{ telegraf_version }}'
@@ -13,7 +17,7 @@
     command: -config /etc/telegraf/telegraf.conf -config-directory /etc/telegraf/telegraf.d
     network_mode: 'bridge'
     security_opts:
-      - apparmor:unconfined
+      - apparmor: unconfined
     volumes:
       - /etc/telegraf:/etc/telegraf:ro
       - /:/hostfs:ro

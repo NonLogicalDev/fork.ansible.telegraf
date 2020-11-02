@@ -1,10 +1,12 @@
 ---
 # vars file for sbaerlocher.telegraf
 
+telegraf_install_type: '{{ omit }}'
+
 telegraf_directory: '/etc/telegraf'
 
 telegraf_logfile: '{{ telegraf_directory }}/telegraf.log'
-telegraf_include: '{{ telegraf_directory }}/telegraf.d'
+telegraf_include_dir: '{{ telegraf_directory }}/telegraf.d'
 
 telegraf_inputs_default:
   - input: cpu

@@ -1,60 +1,80 @@
 ---
-# defaults file for sbaerlocher.telegraf
+# File: defaults/main.yml - default variables for telegraf.
 
-# The latest version of the telegraf_version is automatically
-# calculated if 'telegraf_version' no set.
-# telegraf_version: 1.13.0
+# ---------------------------------------------------------------------------
+# Core variables
+# ---------------------------------------------------------------------------
 
-# Package name
-telegraf_package: telegraf
+# Version of telegraf to obtain.
+telegraf_version: "{{ lookup('env','TELEGRAF_VERSION') | default('1.14.*', true) }}"
+
+# Docker specific settings.
+telegraf_container: false
+
+telegraf_user: telegraf
+telegraf_group: telegraf
+
+# Whether to force installation by package, i.e ignore existing choco by Windows.
+telegraf_force_package: false
+
+# Log file destination. STDOUT if set to ''
+telegraf_logfile: ''
+
+telegraf_service_args: []
+
+# ---------------------------------------------------------------------------
+# Config Template variables
+# ---------------------------------------------------------------------------
+
+# Create or replace telegraf configuration from built-in template.
+# Do not create or replace configuration when set to ''.
+telegraf_config_template: telegraf.conf.j2
 
 # Agent Configured
 # https://github.com/influxdata/telegraf/blob/master/docs/CONFIGURATION.md#agent-configuration
-# Override default hostname, if empty use os.Hostname()
-telegraf_agent_hostname: '{{ ansible_fqdn }}'
-# The interval configured for sending data to the server. Default: 10
-telegraf_agent_interval: 10
-# Run Telegraf in debug mode. Default: False
-telegraf_agent_debug: false
-# Rounds collection interval to 'interval' Default: True
-telegraf_agent_round_interval: true
-# Default data flushing interval for all outputs. Default: 10
-telegraf_agent_flush_interval: 10
-# Jitter the flush interval by a random amount. Default: 0
-telegraf_agent_flush_jitter: 0
-# Jitter the collection by a random amount. Default: 0 (since v0.13)
-telegraf_agent_collection_jitter: 0
-# The agent metric batch size. Default: 1000 (since v0.13)
-telegraf_agent_metric_batch_size: 1000
-# The agent metric buffer limit. Default: 10000 (since v0.13)
-telegraf_agent_metric_buffer_limit: 10000
-#  Run Telegraf in quiet mode (error messages only). Default: False (since v0.13)
-telegraf_agent_quiet: false
-# The agent logfile name. Default: '' (means to log to stdout) (since v1.1)
-# telegraf_agent_logfile: ''
-# Do no set the "host" tag in the agent. Default: False (since v1.1)
-telegraf_agent_omit_hostname: false
 
-# Docker specific settings
-telegraf_container: false
+# Override default hostname, if empty use os.Hostname()
+telegraf_config_agent_hostname: '{{ ansible_fqdn }}'
+# The interval configured for sending data to the server. Default: 10
+telegraf_config_agent_interval: 10
+# Run Telegraf in debug mode. Default: False
+telegraf_config_agent_debug: false
+# Rounds collection interval to 'interval' Default: True
+telegraf_config_agent_round_interval: true
+# Default data flushing interval for all outputs. Default: 10
+telegraf_config_agent_flush_interval: 10
+# Jitter the flush interval by a random amount. Default: 0
+telegraf_config_agent_flush_jitter: 0
+# Jitter the collection by a random amount. Default: 0 (since v0.13)
+telegraf_config_agent_collection_jitter: 0
+# The agent metric batch size. Default: 1000 (since v0.13)
+telegraf_config_agent_metric_batch_size: 1000
+# The agent metric buffer limit. Default: 10000 (since v0.13)
+telegraf_config_agent_metric_buffer_limit: 10000
+#  Run Telegraf in quiet mode (error messages only). Default: False (since v0.13)
+telegraf_config_agent_quiet: false
+# Do no set the "host" tag in the agent. Default: False (since v1.1)
+telegraf_config_agent_omit_hostname: false
+# The agent logfile name. Default: '' (means to log to stdout) (since v1.1)
+telegraf_config_agent_logfile: '{{ telegraf_logfile }}'
 
 # Setting tags
 # You can set tags for the host running telegraf:
 # telegraf_global_tags:
 #  - tag_name: some_name
 #    tag_value: some_value
-telegraf_global_tags: []
+telegraf_config_global_tags: []
 
-telegraf_output:
-  - type: influxdb
-    config:
-      - urls = ["http://localhost:8086"]
-      - database = "telegraf"
-      - precision = "s"
+telegraf_config_outputs: {}
+#   - type: influxdb
+#     config:
+#       - urls = ["http://localhost:8086"]
+#       - database = "telegraf"
+#       - precision = "s"
 
-telegraf_inputs: '{{ telegraf_inputs_default }}'
+# telegraf_inputs: '{{ telegraf_inputs_default }}'
 
-# telegraf_aggregators:
+telegraf_config_aggregators: {}
 #   - aggregator: histogram
 #     config:
 #       - period = "30s"
@@ -62,7 +82,7 @@ telegraf_inputs: '{{ telegraf_inputs_default }}'
 #     subconfig:
 #       - measurement_name = "just for example"
 
-# telegraf_processors:
+telegraf_config_processors: {}
 #   - processor: converter
 #     config:
 #       - order = 2
@@ -70,8 +90,9 @@ telegraf_inputs: '{{ telegraf_inputs_default }}'
 #     tags:
 #       - name = "example"
 
-# Whether to force installation by package, i.e ignore existing choco by Windows
-telegraf_force_package: false
+# ---------------------------------------------------------------------------
+# Telegraf Proxy Variables
+# ---------------------------------------------------------------------------
 
 # If a proxy is in use this information can be used.
 # By default, proxy settings are taken from the default_* variables,

@@ -1,16 +1,19 @@
 ---
 # vars file for sbaerlocher.telegraf
 
+telegraf_install_type: 'choco'
+
 telegraf_directory: 'C:\\Program Files\\telegraf'
 
 telegraf_logfile: '{{ telegraf_directory }}\\telegraf.log'
-telegraf_include: '{{ telegraf_directory }}\\telegraf.d'
+telegraf_include_dir: '{{ telegraf_directory }}\\telegraf.d'
+
 telegraf_service_args:
   - --service install
   - --config "{{ telegraf_directory }}\\telegraf.conf"
-  - --config-directory "{{ telegraf_include }}"
+  - --config-directory "{{ telegraf_include_dir }}"
 
-telegraf_inputs_default:
+telegraf_config_inputs_default:
   - input: cpu
     config:
       - percpu = false

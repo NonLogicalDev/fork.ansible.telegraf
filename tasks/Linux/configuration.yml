@@ -1,0 +1,44 @@
+---
+# tasks file for sbaerlocher.telegraf
+
+- name: 'config: create telegraf (home) directory'
+  file:
+    path: '{{ telegraf_directory }}'
+    owner: "{{ telegraf_user }}"
+    group: "{{ telegraf_group }}"
+    state: directory
+  tags:
+    - configuration
+
+- name: 'config: create telegraf.d directory'
+  file:
+    path: '{{ telegraf_include_dir }}'
+    owner: "{{ telegraf_user }}"
+    group: "{{ telegraf_group }}"
+    state: directory
+  tags:
+    - configuration
+
+- name: 'config: render configuration template'
+  template:
+    src: '{{ telegraf_config_template }}'
+    dest: '{{ telegraf_directory }}/telegraf.conf'
+    owner: "{{ telegraf_user }}"
+    group: "{{ telegraf_group }}"
+    backup: yes
+  when: >
+    telegraf_config_template is defined and
+    telegraf_config_template != false
+  notify:
+    - restart telegraf
+  tags:
+    - configuration
+
+- name: "config: start telegraf service"
+  service:
+    name: telegraf
+    state: started
+    enabled: true
+  when: not telegraf_container
+  tags:
+    - configuration
